@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Koacha
 
-## Getting Started
+Application de coaching personnel IA. Définis tes objectifs, tiens un journal quotidien et reçois un feedback personnalisé de Claude.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Next.js 14** (App Router)
+- **Netlify** (déploiement)
+- **Neon PostgreSQL** (via `DATABASE_URL` injectée par Netlify)
+- **Drizzle ORM**
+- **Better Auth** (email / mot de passe)
+- **Anthropic** (Claude) pour le coaching
+- **Tailwind CSS** + **shadcn/ui**
+- **Recharts** (graphiques)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Démarrage en local
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Cloner et installer les dépendances :
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+   ```bash
+   cd documents/koacha
+   npm install
+   ```
 
-## Learn More
+2. Créer un fichier `.env` à la racine (voir `.env.example`) :
 
-To learn more about Next.js, take a look at the following resources:
+   - `DATABASE_URL` : chaîne de connexion PostgreSQL (ex. Neon)
+   - `BETTER_AUTH_SECRET` : secret d’au moins 32 caractères
+   - `BETTER_AUTH_URL` / `NEXT_PUBLIC_APP_URL` : ex. `http://localhost:3000`
+   - `ANTHROPIC_API_KEY` : clé API Anthropic
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. Appliquer les migrations Drizzle :
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+   ```bash
+   npm run db:generate   # génère les migrations (si besoin)
+   npm run db:migrate    # applique les migrations
+   ```
 
-## Deploy on Vercel
+4. Lancer le serveur :
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+   ```bash
+   npm run dev
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Ouvre [http://localhost:3000](http://localhost:3000).
+
+## Déploiement Netlify
+
+- Connecte le repo à Netlify.
+- Netlify injecte automatiquement `DATABASE_URL` si Netlify DB (Neon) est activé.
+- Configure dans Netlify : `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` (ou `NEXT_PUBLIC_APP_URL`), `ANTHROPIC_API_KEY`.
+- Build : `npm run build`, publish : `.next` (géré par le plugin Next.js).
+
+## Scripts
+
+- `npm run dev` — serveur de développement
+- `npm run build` — build production
+- `npm run start` — serveur production
+- `npm run db:generate` — génère les migrations Drizzle
+- `npm run db:migrate` — applique les migrations
+- `npm run db:studio` — Drizzle Studio (exploration BDD)
