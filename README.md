@@ -48,7 +48,7 @@ Ouvre [http://localhost:3000](http://localhost:3000).
 
 - Connecte le repo à Netlify.
 - Netlify injecte automatiquement `DATABASE_URL` si Netlify DB (Neon) est activé.
-- Utilise de préférence la chaîne **pooled** Neon (hôte `…-pooler…`) pour les fonctions serverless ; vérifie que `DATABASE_URL` est bien définie pour l’environnement **Production** (et les preview si besoin).
+- Utilise de préférence la chaîne **pooled** Neon (hôte `…-pooler…`) pour les fonctions serverless ; vérifie que `DATABASE_URL` est bien définie pour l’environnement **Production** (et les preview si besoin). Elle doit être disponible **au runtime** des fonctions (pas seulement au build) — le projet lit la variable de façon à éviter l’inlining Next.js qui figeait l’ancien fallback sur Netlify.
 - Configure dans Netlify : `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` (URL publique du site, ex. `https://ton-site.netlify.app`), `NEXT_PUBLIC_APP_URL`, `ANTHROPIC_API_KEY`.
 - Build : `npm run build`, publish : `.next` (géré par le plugin Next.js).
 
