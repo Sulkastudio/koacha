@@ -6,7 +6,7 @@ Application de coaching personnel IA. Définis tes objectifs, tiens un journal q
 
 - **Next.js 14** (App Router)
 - **Netlify** (déploiement)
-- **Neon PostgreSQL** (via `DATABASE_URL` injectée par Netlify)
+- **Neon PostgreSQL** (via `DATABASE_URL` ; connexion TCP avec `pg` pour éviter les échecs `fetch` du driver HTTP sur Netlify)
 - **Drizzle ORM**
 - **Better Auth** (email / mot de passe)
 - **Anthropic** (Claude) pour le coaching
@@ -48,7 +48,8 @@ Ouvre [http://localhost:3000](http://localhost:3000).
 
 - Connecte le repo à Netlify.
 - Netlify injecte automatiquement `DATABASE_URL` si Netlify DB (Neon) est activé.
-- Configure dans Netlify : `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` (ou `NEXT_PUBLIC_APP_URL`), `ANTHROPIC_API_KEY`.
+- Utilise de préférence la chaîne **pooled** Neon (hôte `…-pooler…`) pour les fonctions serverless ; vérifie que `DATABASE_URL` est bien définie pour l’environnement **Production** (et les preview si besoin).
+- Configure dans Netlify : `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` (URL publique du site, ex. `https://ton-site.netlify.app`), `NEXT_PUBLIC_APP_URL`, `ANTHROPIC_API_KEY`.
 - Build : `npm run build`, publish : `.next` (géré par le plugin Next.js).
 
 ## Scripts
