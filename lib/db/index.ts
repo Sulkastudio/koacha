@@ -2,17 +2,44 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as schema from "./schema";
 
-/**
- * Next.js replaces `process.env.DATABASE_URL` at **build** time. On Netlify the URL is often
- * present only at **runtime** for serverless, so the build can bake in `undefined` and our
- * fallback — then production keeps using the placeholder host. Build the key dynamically so
- * the real `process.env` is read when the pool is created on the server.
- */
+/** Decode env var name so Next.js cannot statically replace `process.env.DATABASE_URL` at build time. */
+function envName(b64: string): string {
+  return Buffer.from(b64, "base64").toString("utf8");
+}
+
+function firstDefinedEnv(namesB64: string[]): string | undefined {
+  for (const b64 of namesB64) {
+    const v = process.env[envName(b64)];
+    if (v) return v;
+  }
+  return undefined;
+}
+
+// DATABASE_URL, NETLIFY_DATABASE_URL, POSTGRES_URL (some templates)
+const CONNECTION_ENV_KEYS = [
+  "REFUQUJBU0VfVVJM", // DATABASE_URL
+  "TkVUTElGWV9EQVRBQkFTRV9VUkw=", // NETLIFY_DATABASE_URL
+  "UE9TVEdSRVNfVVJM", // POSTGRES_URL
+];
+
 function getConnectionString(): string {
-  const key = ["D", "A", "T", "A", "B", "A", "S", "E", "_", "U", "R", "L"].join("");
-  const fromEnv = process.env[key];
+  const fromEnv = firstDefinedEnv(CONNECTION_ENV_KEYS);
   if (fromEnv) return fromEnv;
-  // Local `next build` / CI without DB: allow import graph to resolve; do not use in production.
+
+  // Netlify / AWS serverless runtime (not `next build` on CI) — require a real URL.
+  const onLambda =
+    typeof process.env.AWS_LAMBDA_FUNCTION_NAME === "string" ||
+    typeof process.env.LAMBDA_TASK_ROOT === "string" ||
+    process.cwd().startsWith("/var/task");
+
+  if (onLambda) {
+    throw new Error(
+      "Database URL missing at runtime. In Netlify: Site configuration → Environment variables → " +
+        "add DATABASE_URL (Neon connection string) and enable it for this deploy context " +
+        '("Production" and the scopes that include serverless functions / runtime — not build-only).'
+    );
+  }
+
   return "postgresql://build:build@build.placeholder.koacha/koacha?sslmode=require";
 }
 
